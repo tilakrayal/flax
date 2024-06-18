@@ -32,6 +32,7 @@ from flax.nnx.nnx.proxy_caller import (
   CallableProxy,
   DelayedAccessor,
 )
+from flax.nnx.nnx.pure import Pure
 from flax.nnx.nnx.state import FlatState, State
 from flax.nnx.nnx.variables import Variable, VariableState
 from flax.typing import Key, PathParts
@@ -1154,7 +1155,7 @@ def current_update_context(tag: str) -> UpdateContext:
 
 
 @tp.overload
-def split(graph_node: A, /) -> tuple[GraphDef[A], GraphState]: ...
+def split(graph_node: A, /) -> Pure[A]: ...
 
 
 @tp.overload
@@ -1162,7 +1163,7 @@ def split(
   graph_node: A,
   first: filterlib.Filter,
   /,
-) -> tuple[GraphDef[A], GraphState]: ...
+) -> Pure[A]: ...
 
 
 @tp.overload
@@ -1248,7 +1249,7 @@ def split(
   """
   graphdef, state, _ = flatten(node)
 
-  states: GraphState | tuple[GraphState, ...]
+  states: tuple[GraphState, ...]
   if len(filters) == 0:
     states = (state,)
   elif len(filters) == 1:
@@ -1256,7 +1257,10 @@ def split(
   else:
     states = state.split(filters[0], filters[1], *filters[2:])
 
-  return graphdef, states[0], *states[1:]
+  if len(states) == 1:
+    return Pure(graphdef, states[0])
+  else:
+    return graphdef, states[0], *states[1:]
 
 
 def merge(

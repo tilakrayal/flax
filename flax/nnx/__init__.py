@@ -142,3 +142,4 @@ from .nnx.variables import VariableState as VariableState
 from .nnx.variables import VariableMetadata as VariableMetadata
 from .nnx.variables import with_metadata as with_metadata
 from .nnx.visualization import display as display
+from .nnx.pure import Pure as Pure
