@@ -160,7 +160,13 @@ class State(MutableMapping[K, V], reprlib.Representable):
     return traversals.flatten_mapping(self._mapping)
 
   @classmethod
-  def from_flat_path(cls, flat_state: tp.Mapping[PathParts, V], /) -> State:
+  def from_flat_path(
+    cls,
+    flat_state: tp.Mapping[PathParts, V] | tp.Iterable[tuple[PathParts, V]],
+    /,
+  ) -> State:
+    if not isinstance(flat_state, tp.Mapping):
+      flat_state = dict(flat_state)
     nested_state = traversals.unflatten_mapping(flat_state)
     return cls(nested_state)
 
@@ -175,6 +181,11 @@ class State(MutableMapping[K, V], reprlib.Representable):
     /,
     *filters: filterlib.Filter,
   ) -> tuple[State[K, V], ...]: ...
+
+  @tp.overload
+  def split(
+    self, /, *filters: filterlib.Filter
+  ) -> tp.Union[State[K, V], tuple[State[K, V], ...]]: ...
 
   def split(
     self, first: filterlib.Filter, /, *filters: filterlib.Filter
